@@ -8,8 +8,12 @@ export default function Navbar() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.png" alt="" className="h-10 w-auto" />
           <div className="flex flex-col">
-            <span className="text-lg font-bold tracking-tight text-[#111827] leading-none">CivicAI</span>
-            <span className="text-[10px] text-[#6B7280] leading-tight">Understand. Participate.</span>
+            <span className="text-lg font-bold tracking-tight text-[#111827] leading-none">
+              CivicAI
+            </span>
+            <span className="text-[10px] text-[#6B7280] leading-tight">
+              Understand. Participate.
+            </span>
           </div>
         </Link>
         <div className="flex items-center gap-6 text-sm font-medium text-[#6B7280]">
