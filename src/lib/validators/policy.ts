@@ -5,6 +5,7 @@ export const policyUploadSchema = z.object({
   ministry: z.string().min(2).max(100).trim(),
   category_id: z.number().int().positive(),
   description: z.string().max(1000).trim().optional(),
+  effective_date: z.string().optional(),
 });
 
 export type PolicyUploadInput = z.infer<typeof policyUploadSchema>;

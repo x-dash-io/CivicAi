@@ -85,9 +85,6 @@ export default function AuthLayout({
             Article 118 of the Constitution of Kenya 2010 mandates public participation. CivicAI
             empowers citizens to fulfill this constitutional role.
           </p>
-          <p className="text-[10px] text-zinc-400 font-mono">
-            INTE 324 Team Project | Kabarak University 2026
-          </p>
         </div>
       </aside>
 

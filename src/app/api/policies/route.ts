@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, ministry, category_id, description } = parsed.data;
+    const { title, ministry, category_id, description, effective_date } = parsed.data;
 
     const document_type = document_url.endsWith('.docx') ? 'docx' : 'pdf';
 
@@ -133,6 +133,7 @@ export async function POST(request: NextRequest) {
         document_type,
         status: 'pending',
         uploaded_by: session.user.id,
+        effective_date: effective_date || null,
       })
       .select('id, title, status, created_at')
       .single();
