@@ -7,9 +7,17 @@ export interface Policy {
   summary: string | null;
   audio_url: string | null;
   document_url: string;
-  status: 'processing' | 'ready' | 'failed';
+  status: 'pending' | 'processing' | 'ready' | 'failed';
   created_at: string;
   feedback_count: number;
+}
+
+export interface PolicyListResponse {
+  policies: Policy[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
 }
 
 export interface Feedback {

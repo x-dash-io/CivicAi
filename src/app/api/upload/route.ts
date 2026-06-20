@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     const fileBuffer = Buffer.from(await file.arrayBuffer());
 
     // 6. Upload to Supabase Storage policy-documents bucket
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('policy-documents')
       .upload(uniqueFilename, fileBuffer, {
         contentType: file.type,
@@ -145,12 +145,13 @@ export async function POST(req: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred.';
     return NextResponse.json(
       {
         error: {
           code: 'PROCESSING_FAILED',
-          message: error.message || 'An unexpected error occurred.',
+          message,
           status: 500,
         },
       },
