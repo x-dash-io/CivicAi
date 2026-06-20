@@ -20,16 +20,21 @@ export async function runSummarize(policy_id: string): Promise<string> {
     .single();
 
   if (fetchError || !policy) {
+    const errorMsg = `Failed to fetch policy: ${fetchError?.message ?? 'not found'}`;
     await serviceRole
       .from('processing_jobs')
-      .update({ status: 'failed', completed_at: new Date().toISOString() })
+      .update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: errorMsg,
+      })
       .eq('policy_id', policy_id)
       .eq('job_type', 'summarize');
     await serviceRole
       .from('policies')
       .update({ status: 'failed', updated_at: new Date().toISOString() })
       .eq('id', policy_id);
-    throw new Error(`Failed to fetch policy: ${fetchError?.message ?? 'not found'}`);
+    throw new Error(errorMsg);
   }
 
   let documentText: string;
@@ -57,9 +62,14 @@ export async function runSummarize(policy_id: string): Promise<string> {
       documentText = await parsePDF(buffer);
     }
   } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
     await serviceRole
       .from('processing_jobs')
-      .update({ status: 'failed', completed_at: new Date().toISOString() })
+      .update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: errorMsg,
+      })
       .eq('policy_id', policy_id)
       .eq('job_type', 'summarize');
     await serviceRole
@@ -73,9 +83,14 @@ export async function runSummarize(policy_id: string): Promise<string> {
   try {
     summary = await summarizeText(documentText);
   } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
     await serviceRole
       .from('processing_jobs')
-      .update({ status: 'failed', completed_at: new Date().toISOString() })
+      .update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: errorMsg,
+      })
       .eq('policy_id', policy_id)
       .eq('job_type', 'summarize');
     await serviceRole
@@ -119,38 +134,53 @@ export async function runTts(policy_id: string): Promise<void> {
     .single();
 
   if (fetchError || !policy) {
+    const errorMsg = `Failed to fetch policy: ${fetchError?.message ?? 'not found'}`;
     await serviceRole
       .from('processing_jobs')
-      .update({ status: 'failed', completed_at: new Date().toISOString() })
+      .update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: errorMsg,
+      })
       .eq('policy_id', policy_id)
       .eq('job_type', 'tts');
     await serviceRole
       .from('policies')
       .update({ status: 'failed', updated_at: new Date().toISOString() })
       .eq('id', policy_id);
-    throw new Error(`Failed to fetch policy: ${fetchError?.message ?? 'not found'}`);
+    throw new Error(errorMsg);
   }
 
   if (!policy.summary) {
+    const errorMsg = 'Policy has no summary — run summarize first';
     await serviceRole
       .from('processing_jobs')
-      .update({ status: 'failed', completed_at: new Date().toISOString() })
+      .update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: errorMsg,
+      })
       .eq('policy_id', policy_id)
       .eq('job_type', 'tts');
     await serviceRole
       .from('policies')
       .update({ status: 'failed', updated_at: new Date().toISOString() })
       .eq('id', policy_id);
-    throw new Error('Policy has no summary — run summarize first');
+    throw new Error(errorMsg);
   }
 
   let audioBuffer: Buffer;
   try {
     audioBuffer = await generateSpeech(policy.summary);
   } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
     await serviceRole
       .from('processing_jobs')
-      .update({ status: 'failed', completed_at: new Date().toISOString() })
+      .update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: errorMsg,
+      })
       .eq('policy_id', policy_id)
       .eq('job_type', 'tts');
     await serviceRole
@@ -171,16 +201,21 @@ export async function runTts(policy_id: string): Promise<void> {
     });
 
   if (uploadError) {
+    const errorMsg = `Failed to upload audio: ${uploadError.message}`;
     await serviceRole
       .from('processing_jobs')
-      .update({ status: 'failed', completed_at: new Date().toISOString() })
+      .update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: errorMsg,
+      })
       .eq('policy_id', policy_id)
       .eq('job_type', 'tts');
     await serviceRole
       .from('policies')
       .update({ status: 'failed', updated_at: new Date().toISOString() })
       .eq('id', policy_id);
-    throw new Error(`Failed to upload audio: ${uploadError.message}`);
+    throw new Error(errorMsg);
   }
 
   const {
@@ -192,6 +227,7 @@ export async function runTts(policy_id: string): Promise<void> {
     .update({
       audio_url: publicUrl,
       status: 'ready',
+      published_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
     .eq('id', policy_id);

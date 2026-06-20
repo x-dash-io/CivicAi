@@ -58,15 +58,12 @@ export default function AdminFeedbackPage() {
 
     const fetchPolicies = async () => {
       try {
-        const supabase = await import('@/lib/supabase/server').then((m) =>
-          m.createServerSupabaseClient()
-        );
-        const { data } = await supabase
-          .from('policies')
-          .select('id, title, ministry')
-          .eq('status', 'ready')
-          .order('title');
-        setPolicies(data || []);
+        const res = await fetch('/api/policies?limit=100');
+        if (!res.ok) {
+          throw new Error('Failed to fetch policies');
+        }
+        const data = await res.json();
+        setPolicies(data.policies || []);
       } catch (err) {
         console.error('Failed to fetch policies:', err);
       }
@@ -78,7 +75,7 @@ export default function AdminFeedbackPage() {
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      const response = await fetch(`/api/policies/${id}/feedback`, {
+      const response = await fetch(`/api/feedback/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

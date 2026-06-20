@@ -236,6 +236,9 @@ User: [Extracted policy text — chunked at 4000 tokens]
 - Format: MP3 (from edge-tts), 64kbps target (for bandwidth efficiency)
 - Max summary length for TTS: 1500 words
 
+> [!WARNING]
+> **Known Risk:** Both `edge-tts` and `gTTS` are unofficial wrappers around proprietary services with no guarantees or official SLA. These engines are vulnerable to service disruption or blocking due to policy or endpoint modifications by upstream providers.
+
 ---
 
 ## 5. Environment Variables

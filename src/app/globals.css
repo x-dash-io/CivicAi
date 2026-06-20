@@ -48,3 +48,38 @@ html {
   min-width: 2.75rem;
   min-height: 2.75rem;
 }
+
+/* High Contrast Mode overrides */
+html.high-contrast {
+  --background: #000000 !important;
+  --foreground: #ffffff !important;
+  
+  --color-primary: #60a5fa !important;
+  --color-primary-dark: #3b82f6 !important;
+  --color-accent: #ffffff !important;
+  --color-bg-base: #000000 !important;
+  --color-surface: #111111 !important;
+  --color-border-custom: #ffffff !important;
+  --color-text-primary: #ffffff !important;
+  --color-text-secondary: #e5e7eb !important;
+  --color-text-muted: #d1d5db !important;
+}
+
+html.high-contrast body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Font size adjustment helpers */
+html.font-size-sm {
+  font-size: 14px !important;
+}
+html.font-size-md {
+  font-size: 16px !important;
+}
+html.font-size-lg {
+  font-size: 19px !important;
+}
+html.font-size-xl {
+  font-size: 22px !important;
+}

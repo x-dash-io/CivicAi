@@ -60,10 +60,11 @@ export default function AdminPoliciesPage() {
   const [error, setError] = useState<string | null>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const activeProcessingRef = useRef<Set<string>>(new Set());
 
   const fetchPolicies = useCallback(async () => {
     try {
-      const res = await fetch('/api/policies?limit=50');
+      const res = await fetch('/api/policies?limit=50&admin=true');
       if (!res.ok) {
         throw new Error('Failed to fetch policies');
       }
@@ -71,6 +72,33 @@ export default function AdminPoliciesPage() {
       setPolicies(data.policies);
       setLastRefreshed(new Date());
       setError(null);
+
+      // Automatically trigger processing based on policy status
+      data.policies.forEach((policy) => {
+        if (policy.status === 'pending' && !activeProcessingRef.current.has(policy.id)) {
+          activeProcessingRef.current.add(policy.id);
+          fetch('/api/process/summarize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ policy_id: policy.id }),
+          }).catch((err) => {
+            console.error('Failed to trigger summarize:', err);
+          });
+        } else if (
+          policy.status === 'processing' &&
+          !activeProcessingRef.current.has(policy.id + '_tts')
+        ) {
+          activeProcessingRef.current.add(policy.id + '_tts');
+          fetch('/api/process/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ policy_id: policy.id }),
+          }).catch((err) => {
+            console.error('Failed to trigger tts:', err);
+          });
+        }
+      });
+
       return data.policies;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

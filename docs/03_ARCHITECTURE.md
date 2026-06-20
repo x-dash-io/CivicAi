@@ -173,7 +173,7 @@ Vercel Production (civicai.vercel.app)
 | Database | Supabase free (500MB) | Supabase Pro with read replicas |
 | Auth | Supabase Auth | Same (scales well) |
 | Deployment | Vercel Hobby | Vercel Pro or self-hosted |
-| Audio generation | Per-request Google TTS | Pre-generate + cache all audio |
+| Audio generation | edge-tts / gTTS | Pre-generate + cache all audio |
 
 ---
 
@@ -186,3 +186,6 @@ Vercel Production (civicai.vercel.app)
 | Supabase | Auth + DB + Storage | N/A (core dependency) |
 | Vercel | Hosting + CDN | N/A for MVP |
 | Google OAuth | Social login | Email/password only |
+
+> [!WARNING]
+> **Known Risk:** Both `edge-tts` and `gTTS` are unofficial, community-maintained API wrappers with no official SLA or guarantees. They are prone to potential upstream service changes, rate limiting, or service disruption, which represents an architectural risk for production scaling.

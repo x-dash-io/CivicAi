@@ -14,14 +14,43 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')?.trim() || '';
     const categorySlug = searchParams.get('category')?.trim() || '';
     const ministry = searchParams.get('ministry')?.trim() || '';
+    const adminParam = searchParams.get('admin') === 'true';
+
+    let isAdmin = false;
+    if (adminParam) {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        if (profile?.role === 'admin') {
+          isAdmin = true;
+        }
+      }
+      if (!isAdmin) {
+        return NextResponse.json(
+          { error: { code: 'FORBIDDEN', message: 'Insufficient permissions', status: 403 } },
+          { status: 403 }
+        );
+      }
+    }
 
     let query = supabase
       .from('policies')
-      .select('*, category:categories!inner(id, name, slug), feedback_count:feedback(count)', {
-        count: 'exact',
-      })
-      .not('published_at', 'is', null)
-      .eq('status', 'ready');
+      .select(
+        categorySlug
+          ? '*, category:categories!inner(id, name, slug), feedback_count:feedback(count)'
+          : '*, category:categories(id, name, slug), feedback_count:feedback(count)',
+        { count: 'exact' }
+      );
+
+    if (!isAdmin) {
+      query = query.not('published_at', 'is', null).eq('status', 'ready');
+    }
 
     if (search) {
       query = query.or(
@@ -73,12 +102,13 @@ export async function GET(request: NextRequest) {
       .select('id, name, slug')
       .order('name');
 
-    const { data: ministriesData } = await supabase
-      .from('policies')
-      .select('ministry')
-      .not('published_at', 'is', null)
-      .eq('status', 'ready')
-      .order('ministry');
+    let ministriesQuery = supabase.from('policies').select('ministry');
+
+    if (!isAdmin) {
+      ministriesQuery = ministriesQuery.not('published_at', 'is', null).eq('status', 'ready');
+    }
+
+    const { data: ministriesData } = await ministriesQuery.order('ministry');
 
     const ministries = [...new Set(ministriesData?.map((m) => m.ministry).filter(Boolean) ?? [])];
 
