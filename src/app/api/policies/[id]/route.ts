@@ -10,6 +10,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       .from('policies')
       .select('*, category:categories(name), feedback_count:feedback(count)')
       .eq('id', id)
+      .not('published_at', 'is', null)
+      .eq('status', 'ready')
       .single();
 
     if (error || !policy) {
@@ -32,10 +34,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       title: policy.title,
       ministry: policy.ministry,
       category: policy.category?.name ?? null,
+      description: policy.description ?? '',
       summary: policy.summary,
       audio_url: policy.audio_url,
       document_url: policy.document_url,
       status: policy.status,
+      published_at: policy.published_at,
+      effective_date: policy.effective_date,
       created_at: policy.created_at,
       feedback_count: feedbackCount,
     });
