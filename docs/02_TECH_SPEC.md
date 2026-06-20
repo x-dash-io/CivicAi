@@ -28,9 +28,10 @@
 | Next.js API Routes | 15 | Backend API (monorepo) |
 | Node.js | 20 LTS | Runtime |
 | Supabase | latest | Auth + Database + Storage |
-| OpenAI SDK | 4.x | AI summarization |
-| Google Cloud TTS / ElevenLabs | — | Text-to-speech audio |
-| pdf-parse | latest | PDF text extraction |
+| Google Gemini SDK | 0.24.x | AI summarization (Gemini 2.0 Flash) |
+| edge-tts | latest | Primary text-to-speech (Kenyan English voice) |
+| gTTS | latest | Fallback text-to-speech (no API key needed) |
+| pdf-parse | 2.x | PDF text extraction |
 | mammoth | latest | DOCX text extraction |
 | Vercel | — | Deployment + Edge Functions |
 
@@ -215,7 +216,7 @@ Upload → Extract Text → Chunk Text → Summarize (OpenAI) → Store Summary
                                          Store Audio → Update Status → Notify
 ```
 
-### 4.1 Summarization Prompt (OpenAI)
+### 4.1 Summarization Prompt (Gemini 2.0 Flash)
 
 ```
 System: You are a plain-language government policy expert for Kenya. 
@@ -228,9 +229,11 @@ User: [Extracted policy text — chunked at 4000 tokens]
 
 ### 4.2 Text-to-Speech
 
-- Provider: Google Cloud Text-to-Speech (or ElevenLabs fallback)
-- Voice: Kenyan English (en-KE-Standard-A)
-- Format: MP3, 64kbps (for bandwidth efficiency)
+- Primary provider: **edge-tts** (Microsoft Edge TTS service, free, no API key)
+  - Voice: `en-KE-AsiliaNeural` (Kenyan English, Female) or `en-KE-ChilembaNeural` (Male)
+- Fallback provider: **gTTS** (Google Translate TTS, free, no API key, English)
+- Configurable via `TTS_PRIMARY_ENGINE` env var (`edge` or `gtts`)
+- Format: MP3 (from edge-tts), 64kbps target (for bandwidth efficiency)
 - Max summary length for TTS: 1500 words
 
 ---
@@ -243,11 +246,11 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
-# OpenAI
-OPENAI_API_KEY=
+# AI — Gemini (replaces OpenAI)
+GEMINI_API_KEY=
 
-# Google Cloud TTS
-GOOGLE_TTS_API_KEY=
+# Text-to-Speech (edge-tts is primary, gTTS is fallback — neither needs an API key)
+# TTS_PRIMARY_ENGINE=edge   # set to "gtts" to prefer gTTS over edge-tts
 
 # Next Auth
 NEXTAUTH_SECRET=
